@@ -8,12 +8,7 @@ dotenv.config()
 // 서버 인스턴스 생성
 const server = new McpServer({
     name: 'typescript-mcp-server',
-    version: '1.0.0',
-    capabilities: {
-        tools: {},
-        resources: {},
-        prompts: {}
-    }
+    version: '1.0.0'
 })
 
 // 예시 도구: 인사하기
