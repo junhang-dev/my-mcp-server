@@ -124,7 +124,7 @@ const handler = createMcpHandler(
                     const client = new InferenceClient(process.env.HF_TOKEN)
 
                     const imageBlob = await client.textToImage({
-                        provider: 'fal-ai',
+                        provider: 'hf-inference',
                         model: 'black-forest-labs/FLUX.1-schnell',
                         inputs: prompt,
                         parameters: { num_inference_steps: 5 }
