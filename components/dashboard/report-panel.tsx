@@ -127,6 +127,47 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
     }
   }, [result])
 
+  const handleDownload = useCallback(() => {
+    if (!result?.file) return
+
+    // If the result is a URL, open it in a new tab to download
+    if (
+      result.file.startsWith("http://") ||
+      result.file.startsWith("https://")
+    ) {
+      const link = document.createElement("a")
+      link.href = result.file
+      link.target = "_blank"
+      link.rel = "noopener noreferrer"
+      link.download = ""
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      return
+    }
+
+    // If the result is text content, create a downloadable file
+    const now = new Date()
+    const dateStr = now
+      .toISOString()
+      .replace(/T/, "_")
+      .replace(/:/g, "")
+      .substring(0, 15)
+    const filename = `사고대응보고서_${dateStr}.txt`
+    const BOM = "\uFEFF"
+    const blob = new Blob([BOM + result.file], {
+      type: "text/plain;charset=utf-8",
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, [result])
+
   const handleReset = useCallback(() => {
     setStatus("idle")
     setResult(null)
@@ -271,6 +312,13 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
                         <ClipboardCopy className="h-3.5 w-3.5" />
                         {copied ? "복사됨" : "복사"}
                       </button>
+                      <button
+                        onClick={handleDownload}
+                        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        저장
+                      </button>
                     </div>
                   </div>
                   <div className="max-h-[40vh] overflow-y-auto p-4">
@@ -281,20 +329,16 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
                 </div>
               )}
 
-              {/* If file is a URL, show download */}
-              {result.file &&
-                (result.file.startsWith("http://") ||
-                  result.file.startsWith("https://")) && (
-                  <a
-                    href={result.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 py-3 text-sm font-bold text-primary transition-all hover:bg-primary/20 active:scale-[0.98]"
-                  >
-                    <Download className="h-4 w-4" />
-                    보고서 파일 다운로드
-                  </a>
-                )}
+              {/* Download button - always shown */}
+              {result.file && (
+                <button
+                  onClick={handleDownload}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98]"
+                >
+                  <Download className="h-4 w-4" />
+                  보고서 파일 다운로드
+                </button>
+              )}
 
               <button
                 onClick={handleReset}
