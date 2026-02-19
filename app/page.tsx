@@ -1,15 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Monitor, Smartphone } from "lucide-react"
+import { Monitor, Smartphone, FileText } from "lucide-react"
 import GlobalHeader from "@/components/global-header"
 import CommandDashboard from "@/components/dashboard/command-dashboard"
 import FieldWorkerMode from "@/components/field/field-worker-mode"
+import ReportPanel from "@/components/dashboard/report-panel"
 
 type ViewMode = "dashboard" | "field"
 
 export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard")
+  const [reportOpen, setReportOpen] = useState(false)
   const currentStep = 2 // 현재 '굴착' 단계
 
   return (
@@ -40,6 +42,16 @@ export default function Home() {
           <Smartphone className="h-4 w-4" />
           <span>현장 작업자 모드</span>
         </button>
+
+        <div className="ml-auto">
+          <button
+            onClick={() => setReportOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-primary/15 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/25"
+          >
+            <FileText className="h-4 w-4" />
+            <span>보고서 작성</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -50,6 +62,9 @@ export default function Home() {
           <FieldWorkerMode />
         )}
       </main>
+
+      {/* Report Panel */}
+      <ReportPanel open={reportOpen} onClose={() => setReportOpen(false)} />
     </div>
   )
 }
