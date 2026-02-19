@@ -11,6 +11,11 @@ import {
   RefreshCw,
   ClipboardCopy,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Progress } from "@/components/ui/progress"
 
 interface ReportPanelProps {
   open: boolean
@@ -26,7 +31,7 @@ function buildDashboardText(): string {
 보고서 생성 시각: ${timestamp}
 
 1. 사고 개요
-- 사고 위치: 서울시 마포구 상암동 1234번지 (37.5665°N, 126.9780°E)
+- 사고 위치: 서울시 마포구 상암동 1234번지 (37.5665\u00B0N, 126.9780\u00B0E)
 - 사고 유형: 열수송관 파열
 - 사고 등급: Level 1 - 심각
 - 신고 시간: 2026-02-19 09:32:15
@@ -83,7 +88,6 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
 
     try {
       const text1 = buildDashboardText()
-
       const response = await fetch("/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,10 +106,7 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
       }
 
       setStatus("success")
-      setResult({
-        file: data.file,
-        elapsedTime: data.elapsedTime,
-      })
+      setResult({ file: data.file, elapsedTime: data.elapsedTime })
     } catch {
       setStatus("error")
       setError({
@@ -130,11 +131,7 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
   const handleDownload = useCallback(() => {
     if (!result?.file) return
 
-    // If the result is a URL, open it in a new tab to download
-    if (
-      result.file.startsWith("http://") ||
-      result.file.startsWith("https://")
-    ) {
+    if (result.file.startsWith("http://") || result.file.startsWith("https://")) {
       const link = document.createElement("a")
       link.href = result.file
       link.target = "_blank"
@@ -146,18 +143,11 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
       return
     }
 
-    // If the result is text content, create a downloadable file
     const now = new Date()
-    const dateStr = now
-      .toISOString()
-      .replace(/T/, "_")
-      .replace(/:/g, "")
-      .substring(0, 15)
+    const dateStr = now.toISOString().replace(/T/, "_").replace(/:/g, "").substring(0, 15)
     const filename = `사고대응보고서_${dateStr}.txt`
     const BOM = "\uFEFF"
-    const blob = new Blob([BOM + result.file], {
-      type: "text/plain;charset=utf-8",
-    })
+    const blob = new Blob([BOM + result.file], { type: "text/plain;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.href = url
@@ -178,209 +168,190 @@ export default function ReportPanel({ open, onClose }: ReportPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="mx-4 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+      <div className="mx-4 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-card shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15">
-              <FileText className="h-5 w-5 text-primary" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+              <FileText className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-foreground">
+              <h2 className="text-sm font-semibold text-foreground">
                 사고 대응 보고서 생성
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 MISO AI 기반 자동 보고서 작성
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="닫기"
-          >
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
             <X className="h-4 w-4" />
-          </button>
+            <span className="sr-only">닫기</span>
+          </Button>
         </div>
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5">
           {/* Idle State */}
           {status === "idle" && (
-            <div className="flex flex-col items-center gap-6 py-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                <FileText className="h-8 w-8 text-primary" />
+            <div className="flex flex-col items-center gap-5 py-6">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                <FileText className="h-7 w-7 text-primary" />
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground">
                   대시보드의 현재 데이터를 기반으로 보고서를 자동 생성합니다.
                 </p>
-                <p className="mt-1.5 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   사고 개요, 대응 경과, 타임라인, 현장 배치 정보가 포함됩니다.
                 </p>
               </div>
 
-              {/* Preview of what will be sent */}
-              <div className="w-full rounded-lg border border-border bg-muted/30 p-4">
-                <p className="mb-2 text-xs font-semibold text-muted-foreground">
-                  포함 데이터 미리보기
-                </p>
-                <div className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-success" />
-                    <span>사고 개요 (위치, 유형, 등급, 시간, 담당자)</span>
+              <Card className="w-full bg-muted/30">
+                <CardContent className="p-3.5">
+                  <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    포함 데이터
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      "사고 개요 (위치, 유형, 등급, 시간, 담당자)",
+                      "현재 진행 상태 (단계, 진행률, 인원)",
+                      "대응 타임라인 (8건의 실시간 로그)",
+                      "현장 배치 현황 (작업조 A/B/C)",
+                    ].map((item) => (
+                      <div key={item} className="flex items-center gap-2">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-success" />
+                        <span className="text-xs text-muted-foreground">{item}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-success" />
-                    <span>현재 진행 상태 (단계, 진행률, 인원)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-success" />
-                    <span>대응 타임라인 (8건의 실시간 로그)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-success" />
-                    <span>현장 배치 현황 (작업조 A/B/C)</span>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
-              <button
-                onClick={generateReport}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98]"
-              >
+              <Button onClick={generateReport} className="w-full gap-2">
                 <FileText className="h-4 w-4" />
                 보고서 생성하기
-              </button>
+              </Button>
             </div>
           )}
 
           {/* Loading State */}
           {status === "loading" && (
-            <div className="flex flex-col items-center gap-6 py-12">
-              <div className="relative">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
+            <div className="flex flex-col items-center gap-5 py-10">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                <Loader2 className="h-7 w-7 animate-spin text-primary" />
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-foreground">
                   보고서를 생성하고 있습니다...
                 </p>
-                <p className="mt-1.5 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   MISO AI가 대시보드 데이터를 분석 중입니다
                 </p>
               </div>
-              {/* Progress simulation */}
               <div className="w-full max-w-xs">
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div className="h-full animate-pulse rounded-full bg-primary/60" style={{ width: "60%" }} />
-                </div>
+                <Progress value={60} className="h-1" />
               </div>
             </div>
           )}
 
           {/* Success State */}
           {status === "success" && result && (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 rounded-lg border border-success/30 bg-success/10 px-4 py-3">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
-                <div>
-                  <p className="text-sm font-semibold text-success">
+            <div className="flex flex-col gap-3.5">
+              <div className="flex items-center gap-3 rounded-md border border-success/20 bg-success/5 px-4 py-2.5">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-success">
                     보고서가 생성되었습니다
                   </p>
                   {result.elapsedTime && (
-                    <p className="text-xs text-success/70">
+                    <p className="text-[11px] text-success/70">
                       소요 시간: {result.elapsedTime.toFixed(1)}초
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Report Content */}
               {result.file && (
-                <div className="rounded-lg border border-border bg-muted/30">
-                  <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-                    <span className="text-xs font-semibold text-muted-foreground">
+                <Card className="overflow-hidden bg-muted/20">
+                  <div className="flex items-center justify-between border-b border-border px-3.5 py-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                       생성된 보고서
                     </span>
-                    <div className="flex items-center gap-1">
-                      <button
+                    <div className="flex items-center gap-0.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1.5 px-2 text-[11px]"
                         onClick={handleCopy}
-                        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
-                        <ClipboardCopy className="h-3.5 w-3.5" />
+                        <ClipboardCopy className="h-3 w-3" />
                         {copied ? "복사됨" : "복사"}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 gap-1.5 px-2 text-[11px]"
                         onClick={handleDownload}
-                        className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
-                        <Download className="h-3.5 w-3.5" />
+                        <Download className="h-3 w-3" />
                         저장
-                      </button>
+                      </Button>
                     </div>
                   </div>
-                  <div className="max-h-[40vh] overflow-y-auto p-4">
-                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
-                      {result.file}
-                    </pre>
-                  </div>
-                </div>
+                  <ScrollArea className="max-h-[40vh]">
+                    <div className="p-3.5">
+                      <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-foreground">
+                        {result.file}
+                      </pre>
+                    </div>
+                  </ScrollArea>
+                </Card>
               )}
 
-              {/* Download button - always shown */}
               {result.file && (
-                <button
-                  onClick={handleDownload}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98]"
-                >
+                <Button onClick={handleDownload} className="w-full gap-2">
                   <Download className="h-4 w-4" />
                   보고서 파일 다운로드
-                </button>
+                </Button>
               )}
 
-              <button
+              <Button
+                variant="outline"
                 onClick={handleReset}
-                className="flex items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-[0.98]"
+                className="w-full gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 다시 생성하기
-              </button>
+              </Button>
             </div>
           )}
 
           {/* Error State */}
           {status === "error" && error && (
-            <div className="flex flex-col items-center gap-6 py-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
-                <AlertCircle className="h-8 w-8 text-destructive" />
+            <div className="flex flex-col items-center gap-5 py-6">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-destructive/10">
+                <AlertCircle className="h-7 w-7 text-destructive" />
               </div>
-              <div className="w-full rounded-lg border border-destructive/30 bg-destructive/5 p-4">
-                <p className="text-sm font-semibold text-destructive">
-                  {error.detail}
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">
-                    해결 방안:
-                  </span>{" "}
-                  {error.solution}
-                </p>
-              </div>
-              <div className="flex w-full gap-3">
-                <button
-                  onClick={generateReport}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98]"
-                >
+              <Card className="w-full border-destructive/20 bg-destructive/5">
+                <CardContent className="p-3.5">
+                  <p className="text-sm font-medium text-destructive">
+                    {error.detail}
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">해결 방안:</span>{" "}
+                    {error.solution}
+                  </p>
+                </CardContent>
+              </Card>
+              <div className="flex w-full gap-2.5">
+                <Button onClick={generateReport} className="flex-1 gap-2">
                   <RefreshCw className="h-4 w-4" />
                   다시 시도
-                </button>
-                <button
-                  onClick={handleReset}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground active:scale-[0.98]"
-                >
+                </Button>
+                <Button variant="outline" onClick={handleReset} className="flex-1">
                   돌아가기
-                </button>
+                </Button>
               </div>
             </div>
           )}
