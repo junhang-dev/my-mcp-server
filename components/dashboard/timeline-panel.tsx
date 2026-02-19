@@ -146,9 +146,13 @@ export default function TimelinePanel() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (liveIndexRef.current < LIVE_LOGS.length) {
-        setLogs((prev) => [LIVE_LOGS[liveIndexRef.current], ...prev])
-        liveIndexRef.current++
+      const idx = liveIndexRef.current
+      if (idx < LIVE_LOGS.length) {
+        const nextLog = LIVE_LOGS[idx]
+        if (nextLog) {
+          liveIndexRef.current = idx + 1
+          setLogs((prev) => [nextLog, ...prev])
+        }
       }
     }, 5000)
     return () => clearInterval(interval)
@@ -180,7 +184,7 @@ export default function TimelinePanel() {
         style={{ maxHeight: "calc(100vh - 200px)" }}
       >
         <div className="divide-y divide-border">
-          {logs.map((log) => (
+          {logs.filter(Boolean).map((log) => (
             <TimelineItem key={log.id} log={log} />
           ))}
         </div>
